@@ -13,6 +13,7 @@ functions to determine that order, and indeed perform the loops.
 import collections
 from ..mass_function import hmf
 import itertools
+import numpy as np
 
 
 def get_best_param_order(kls, q="dndm", **kwargs):
@@ -50,8 +51,8 @@ def get_best_param_order(kls, q="dndm", **kwargs):
     Examples
     --------
     >>> from src.hmf import MassFunction
-    >>> print get_best_param_order(MassFunction,"dndm",transfer_model="BBKS",dlnk=1,dlog10m=1)[::3]
-    ['z2', 'hmf_model', 'delta_wrt', 'growth_params', 'filter_params', 'Mmin', 'transfer_params',
+    >>> print get_best_param_order(MassFunction,"dndm",transfer_model="BBKS",dlnk=1,np.logspace(10, 15, 100))[::3]
+    ['z2', 'hmf_model', 'delta_wrt', 'growth_params', 'filter_params', 'm', 'transfer_params',
     'dlnk', 'cosmo_params']
     """
     a = kls(**kwargs)
@@ -87,9 +88,7 @@ def get_hmf(
         "lnk_min": -1,
         "lnk_max": 1,
         "dlnk": 1,
-        "Mmin": 10,
-        "Mmax": 11.5,
-        "dlog10m": 0.5,
+        "m": np.logspace(10, 11, 2)
     },
     **kwargs
 ):

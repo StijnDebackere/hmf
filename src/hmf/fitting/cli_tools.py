@@ -355,12 +355,7 @@ Either a univariate standard deviation, or multivariate cov matrix must be provi
     def _setup_x(self, instance):
         if self.xval == "M":
             assert np.allclose(np.diff(np.diff(np.log10(self.x))), 0)
-            dlog10m = np.log10(self.x[1] / self.x[0])
-            instance.update(
-                Mmin=np.log10(self.x[0]),
-                Mmax=np.log10(self.x[-1]) + 0.2 * dlog10m,
-                dlog10m=dlog10m,
-            )
+            instance.update(m=self.x)
         elif self.xval == "k":
             assert np.allclose(np.diff(np.diff(np.log10(self.x))), 0)
             dlnk = np.log(self.x[1] / self.x[0])

@@ -8,8 +8,8 @@ from ..mass_function import hmf
 from scipy.interpolate import InterpolatedUnivariateSpline as _spline
 
 
-def _prepare_mf(log_mmin, **mf_kwargs):
-    h = hmf.MassFunction(Mmin=log_mmin, **mf_kwargs)
+def _prepare_mf(m, **mf_kwargs):
+    h = hmf.MassFunction(m=m, **mf_kwargs)
     mask = h.ngtm > 0
     icdf = _spline((h.ngtm[mask] / h.ngtm[0])[::-1], np.log10(h.m[mask][::-1]), k=3)
 
@@ -25,7 +25,7 @@ def _choose_halo_masses_num(N, icdf):
     return m
 
 
-def sample_mf(N, log_mmin, sort=False, **mf_kwargs):
+def sample_mf(N, m, sort=False, **mf_kwargs):
     """
     Create a sample of halo masses from a theoretical mass function.
 
@@ -33,8 +33,8 @@ def sample_mf(N, log_mmin, sort=False, **mf_kwargs):
     ----------
     N : int
         Number of samples to draw
-    log_mmin : float
-        Log10 of the minimum mass to sample [Msun/h]
+    m : array-like
+        Log10 of the masses to sample [Msun/h]
     sort : bool, optional
         Whether to sort (in descending order of mass) the output masses.
     mf_kwargs : keywords
@@ -58,14 +58,14 @@ def sample_mf(N, log_mmin, sort=False, **mf_kwargs):
 
     >>> m,hmf = sample_mf(1e6,10.0,hmf_model="PS",Mmax=17)
     """
-    icdf, h = _prepare_mf(log_mmin, **mf_kwargs)
+    icdf, h = _prepare_mf(m, **mf_kwargs)
 
-    m = _choose_halo_masses_num(N, icdf)
+    ms = _choose_halo_masses_num(N, icdf)
 
     if sort:
         m.sort()
 
-    return m[::-1], h
+    return ms[::-1], h
 
 
 def dndm_from_sample(m, V, nm=None, bins=50):

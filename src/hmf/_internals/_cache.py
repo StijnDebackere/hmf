@@ -130,7 +130,8 @@ def cached_quantity(f):
 
 def obj_eq(ob1, ob2):
     try:
-        return ob1 == ob2
+        return bool(ob1 == ob2)
+    # we are dealing with an array
     except ValueError:
         return bool((ob1 == ob2).all())
 
@@ -219,6 +220,7 @@ def parameter(kind):
                     setattr(self, recalc_papr, {name: set()})
 
             # If either the new value is different from the old, or we never set it before
+            # if array is returned, all need to match
             if not obj_eq(val, old_val) or doset:
                 # Then if its a dict, we update it
                 if isinstance(val, dict) and hasattr(self, prop) and val:

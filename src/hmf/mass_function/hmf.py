@@ -55,7 +55,7 @@ class MassFunction(transfer.Transfer):
     Many different parameters may be passed, both models and parameters of those models.
     For instance:
 
-    >>> h = MassFunction(z=1.0,Mmin=8,hmf_model="SMT")
+    >>> h = MassFunction(z=1.0,m=np.logspace(8, 15, 500),hmf_model="SMT")
     >>> h.dndm
 
     Once instantiated, changing parameters should be done through the :meth:`update`
@@ -67,9 +67,7 @@ class MassFunction(transfer.Transfer):
 
     def __init__(
         self,
-        Mmin=10,
-        Mmax=15,
-        dlog10m=0.01,
+        m=np.logspace(10, 15, 50),
         hmf_model=ff.Tinker08,
         hmf_params=None,
         mdef_model=None,
@@ -84,9 +82,7 @@ class MassFunction(transfer.Transfer):
 
         # Set all given parameters.
         self.hmf_model = hmf_model
-        self.Mmin = Mmin
-        self.Mmax = Mmax
-        self.dlog10m = dlog10m
+        self.m = m
         self.mdef_model = mdef_model
         self.mdef_params = mdef_params or {}
         self.delta_c = delta_c
@@ -98,27 +94,9 @@ class MassFunction(transfer.Transfer):
     # PARAMETERS
     # ===========================================================================
     @parameter("res")
-    def Mmin(self, val):
+    def m(self, val):
         r"""
-        Minimum mass at which to perform analysis [units :math:`\log_{10}M_\odot h^{-1}`].
-
-        :type: float
-        """
-        return val
-
-    @parameter("res")
-    def Mmax(self, val):
-        r"""
-        Maximum mass at which to perform analysis [units :math:`\log_{10}M_\odot h^{-1}`].
-
-        :type: float
-        """
-        return val
-
-    @parameter("res")
-    def dlog10m(self, val):
-        """
-        log10 interval between mass bins
+        Mass range for which to perform analysis [units :math:`\log_{10}M_\odot h^{-1}`].
 
         :type: float
         """
@@ -247,11 +225,6 @@ class MassFunction(transfer.Transfer):
     def filter(self):
         """Instantiated model for filter/window functions."""
         return self.filter_model(self.k, self._unnormalised_power, **self.filter_params)
-
-    @cached_quantity
-    def m(self):
-        """Masses."""
-        return 10 ** np.arange(self.Mmin, self.Mmax, self.dlog10m)
 
     @cached_quantity
     def _unn_sigma0(self):
@@ -444,7 +417,8 @@ class MassFunction(transfer.Transfer):
             # ff.Behroozi function won't work here.
             if not isinstance(self.hmf, ff.Behroozi):
                 new_mf = copy.deepcopy(self)
-                new_mf.update(Mmin=np.log10(self.m[-1]) + self.dlog10m, Mmax=18)
+                dlog10m = np.log10(m[-1]) - np.log10(m[-2])
+                new_mf.update(m=np.logspace(np.log10(self.m[-1]) + dlog10m, 18, 100))
                 dndm = np.concatenate((dndm, new_mf.dndm))
 
                 m = np.concatenate((m, new_mf.m))
